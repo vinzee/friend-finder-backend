@@ -1,11 +1,35 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= title %></title>
+    <title>FriendFinder</title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script src="jquery/jquery.min.js"></script>
   </head>
   <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
+    <h1>FriendFinder</h1>
+
+    <b>Users (<%= users.length %>)</b>
+    <p><%= users %></p>
+
+    <b>user_locations (<%= user_locations.length %>)</b>
+    <p><%= user_locations %></p>
+
+    <b>nearbyfriends (<span id="nearbyfriends_length"></span>)</b>
+    <p id="nearbyfriends"></p>
+
+    <script>
+
+      $.get('/seed', (data) => {
+        console.log('redis flushed !: ');
+      });
+
+      $.get('/nearbyfriends?current_lat=13.361389&current_lng=38.115555', (data) => {
+        console.log('nearbyfriends: ', data);
+
+        $("#nearbyfriends_length").text(data.length);
+        $("#nearbyfriends").html(data);
+      });
+
+    </script>
   </body>
 </html>
