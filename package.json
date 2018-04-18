@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "start": "DEBUG=friend-finder-backend:* nodemon ./bin/www",
+    "build": "node ./bin/www",
     "redis": "redis-server"
   },
   "dependencies": {
