@@ -96,4 +96,10 @@ router.get('/seed', function(req, res, next) {
   res.send(200);
 });
 
+router.get('/flushall', function(req, res, next) {
+  client.flushall("async", redis.print);
+  res.writeHead( 200, 'Redis Database flushed', {'content-type' : 'text/plain'});
+  res.end( 'Redis Database flushed');
+});
+
 module.exports = router;
