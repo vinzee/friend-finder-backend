@@ -11,8 +11,14 @@ https://code.tutsplus.com/tutorials/building-a-store-finder-with-nodejs-and-redi
 https://redis.io/commands#geo# friend-finder-backend
 
 ```
-# run app on http://localhost:5000
+# run app on locally on http://localhost:5000
 $ heroku run build
 
 $ heroku addons:docs heroku-redis
+
+$ heroku logs -a android-friend-finder
+
+$ heroku logs --tail  -a android-friend-finder
+
+$ heroku addons:info redis-fitted-10737
 ```

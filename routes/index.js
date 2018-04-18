@@ -9,7 +9,7 @@ const express = require('express'),
     nearByQueryRadiusMetric = "mi";
 
 client.on("error", function (err) {
-    console.log("Error " + err);
+    console.log("REDIS ERROR !!! - \n\n ", err);
 });
 
 /* GET home page. */
@@ -21,41 +21,53 @@ router.get('/', function(req, res, next) {
   });
 });
 
-router.get('/users', function(req, res, next) {
-  client.smembers("users", function (error, users) {
-    console.log('users: ', JSON.stringify(users))
-    res.send(users);
+// create user
+router.post('/login', function(req, res, next) {
+  console.log("Username: ", req.body.username);
+
+  if (!_.isEmpty(req.body.username)) {
+    client.sadd("users", req.body.username, redis.print);
+
+    res.writeHead( 200, 'User logged in', {'content-type' : 'text/plain'});
+    res.end( 'User logged in');
+  } else {
+    res.writeHead( 400, 'Username is blank', {'content-type' : 'text/plain'});
+    res.end( 'Username is blank');
+  }
+});
+
+router.put('/user/location', function(req, res, next) {
+  client.sismember("users", req.body.username, (error, replies) => {
+    if (_.isEmpty(error) && replies == 1) {
+      client.geoadd("user_locations", req.body.latitude, req.body.longitude, req.body.username, redis.print);
+      res.writeHead( 200, 'Location Updated', {'content-type' : 'text/plain'});
+      res.end( 'Location Updated');
+    } else {
+      res.writeHead( 400, 'Username is invalid', {'content-type' : 'text/plain'});
+      res.end( 'Username is invalid');
+    }
   });
 });
 
-router.post('/user', function(req, res, next) {
-  client.sadd("users", "Vineet", redis.print);
-});
+/*
+  GET - /nearbyfriends?username=vineet
+*/
+router.get('/nearbyfriends', function(req, res, next) {
+    const username = req.query.username;
 
-router.delete('/user', function(req, res, next) {
-  client.sadd("users", req.body.username, redis.print);
-});
+    client.georadiusbymember("user_locations", username, nearByQueryRadius, nearByQueryRadiusMetric, "WITHCOORD", "WITHDIST", (error, user_locations) => {
+      console.log('error: ', JSON.stringify(error))
+      console.log('user_locations: ', JSON.stringify(user_locations))
 
-router.put('/user/:username/location', function(req, res, next) {
-  client.geoadd("user_locations", req.body.latitude, req.body.longitude, req.body.username, redis.print);
-  res.send(200);
-});
+      res.send(user_locations);
+    });
 
-router.get('/seed', function(req, res, next) {
-  client.flushall("async", redis.print);
-
-  _.each(["Vineet", "Vipin", "Prasad"], (name, i) => {
-    client.sadd("users", name, redis.print);
-    client.geoadd("user_locations", (13.361389 + 0.0000001 * i), (38.115555 + 0.0000001 * i), name, redis.print);
-  })
-
-  res.send(200);
 });
 
 /*
-  /nearbyfriends?current_lat=1.1212&current_lng=1.1213
+  GET - /nearbyfriends?current_lat=1.1212&current_lng=1.1213
 */
-router.get('/nearbyfriends', function(req, res, next) {
+router.get('/nearbyfriends2', function(req, res, next) {
     const current_lat = req.query.current_lat || "13.361389";
     const current_lng = req.query.current_lng || "38.115556";
 
@@ -68,16 +80,20 @@ router.get('/nearbyfriends', function(req, res, next) {
 
 });
 
-router.get('/nearbyfriends2', function(req, res, next) {
-    const username = req.query.username;
+// delete user
+router.delete('/user', function(req, res, next) {
+  client.sadd("users", req.body.username, redis.print);
+});
 
-    client.georadiusbymember("user_locations", username, nearByQueryRadius, nearByQueryRadiusMetric, "WITHCOORD", "WITHDIST", (error, user_locations) => {
-      console.log('error: ', JSON.stringify(error))
-      console.log('user_locations: ', JSON.stringify(user_locations))
+router.get('/seed', function(req, res, next) {
+  client.flushall("async", redis.print);
 
-      res.send(user_locations);
-    });
+  _.each(["Vineet", "Vipin", "Prasad"], (name, i) => {
+    client.sadd("users", name, redis.print);
+    client.geoadd("user_locations", (13.361389 + 0.0000001 * i), (38.115555 + 0.0000001 * i), name, redis.print);
+  })
 
+  res.send(200);
 });
 
 module.exports = router;
