@@ -76,17 +76,16 @@ router.post('/login', function(req, res, next) {
   client.hexists("users", username, (error, replies) => {
     if (_.isEmpty(error) && replies == 1) {
 
-      client.hget("users", username, (error, replies) => {
+      client.hget("users", username, (error, actualPassword) => {
         console.log('error: ', JSON.stringify(error))
 
-        if (replies) {
+        if (password === actualPassword) {
+          res.writeHead( 200, 'User logged in successfully', {'content-type' : 'text/plain'});
+          res.end('User logged in successfully');
+        } else {
           res.writeHead( 400, 'Password is invalid', {'content-type' : 'text/plain'});
           res.end('Password is invalid');
-          return;
         }
-
-        res.writeHead( 200, 'User logged in successfully', {'content-type' : 'text/plain'});
-        res.end('User logged in successfully');
       });
     } else {
       res.writeHead( 400, 'Username is invalid', {'content-type' : 'text/plain'});
