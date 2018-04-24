@@ -24,28 +24,35 @@ router.get('/', function(req, res, next) {
 
 // create user
 router.post('/login', function(req, res, next) {
-  const username = req.body.username.toLowerCase();
-  console.log("Username: ", username);
-
-  if (!_.isEmpty(username)) {
-    client.sadd("users", username, redis.print);
-
-    res.writeHead( 200, 'User logged in', {'content-type' : 'text/plain'});
-    res.end( 'User logged in');
-  } else {
+  if (_.isEmpty(req.body.username)) {
     res.writeHead( 400, 'Username is blank', {'content-type' : 'text/plain'});
     res.end( 'Username is blank');
+    return;
   }
+
+  const username = req.body.username.toLowerCase();
+
+  client.sadd("users", username, redis.print);
+
+  res.writeHead( 200, 'User logged in', {'content-type' : 'text/plain'});
+  res.end( 'User logged in');
 });
 
 router.put('/update_location', function(req, res, next) {
+  if (_.isEmpty(req.body.username)) {
+    res.writeHead( 400, 'Username is blank', {'content-type' : 'text/plain'});
+    res.end( 'Username is blank');
+    return;
+  }
+
   const username = req.body.username.toLowerCase();
 
   client.sismember("users", username, (error, replies) => {
     if (_.isEmpty(error) && replies == 1) {
       client.geoadd("user_locations", req.body.latitude, req.body.longitude, username, redis.print);
 
-      client.georadiusbymember("user_locations", username, nearByQueryRadius, nearByQueryRadiusMetric, "WITHCOORD", "WITHDIST", (error, user_locations) => {
+      // , "WITHDIST"
+      client.georadiusbymember("user_locations", username, nearByQueryRadius, nearByQueryRadiusMetric, "WITHCOORD", (error, user_locations) => {
         console.log('error: ', JSON.stringify(error))
         console.log('user_locations: ', JSON.stringify(user_locations))
 
@@ -62,15 +69,22 @@ router.put('/update_location', function(req, res, next) {
   GET - /nearbyfriends?username=vineet
 */
 router.get('/nearbyfriends', function(req, res, next) {
-    const username = req.query.username.toLowerCase();
-    console.log('username: ', username);
+  if (_.isEmpty(req.query.username)) {
+    res.writeHead( 400, 'Username is blank', {'content-type' : 'text/plain'});
+    res.end( 'Username is blank');
+    return;
+  }
 
-    client.georadiusbymember("user_locations", username, nearByQueryRadius, nearByQueryRadiusMetric, "WITHCOORD", "WITHDIST", (error, user_locations) => {
-      console.log('error: ', JSON.stringify(error))
-      console.log('user_locations: ', JSON.stringify(user_locations))
+  const username = req.query.username.toLowerCase();
+  console.log('username: ', username);
 
-      res.send(user_locations);
-    });
+  // , "WITHDIST"
+  client.georadiusbymember("user_locations", username, nearByQueryRadius, nearByQueryRadiusMetric, "WITHCOORD", (error, user_locations) => {
+    console.log('error: ', JSON.stringify(error))
+    console.log('user_locations: ', JSON.stringify(user_locations))
+
+    res.send(user_locations);
+  });
 
 });
 
@@ -81,7 +95,8 @@ router.get('/nearbyfriends2', function(req, res, next) {
     const current_lat = req.query.current_lat || "13.361389";
     const current_lng = req.query.current_lng || "38.115556";
 
-    client.georadius("user_locations", current_lat, current_lng, nearByQueryRadius, nearByQueryRadiusMetric, "WITHCOORD", "WITHDIST", (error, user_locations) => {
+    // , "WITHDIST"
+    client.georadius("user_locations", current_lat, current_lng, nearByQueryRadius, nearByQueryRadiusMetric, "WITHCOORD", (error, user_locations) => {
       console.log('error: ', JSON.stringify(error))
       console.log('user_locations: ', JSON.stringify(user_locations))
 
