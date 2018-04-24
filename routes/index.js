@@ -51,8 +51,7 @@ router.put('/update_location', function(req, res, next) {
     if (_.isEmpty(error) && replies == 1) {
       client.geoadd("user_locations", req.body.latitude, req.body.longitude, username, redis.print);
 
-      // , "WITHDIST"
-      client.georadiusbymember("user_locations", username, nearByQueryRadius, nearByQueryRadiusMetric, "WITHCOORD", (error, user_locations) => {
+      client.georadiusbymember("user_locations", username, nearByQueryRadius, nearByQueryRadiusMetric, "WITHDIST", "WITHCOORD", (error, user_locations) => {
         console.log('error: ', JSON.stringify(error))
 
         if (user_locations) {
@@ -63,7 +62,6 @@ router.put('/update_location', function(req, res, next) {
           })
         }
 
-        // res.send(JSON.stringify(user_locations));
         res.send(user_locations);
       });
     } else {
@@ -85,30 +83,19 @@ router.get('/nearbyfriends', function(req, res, next) {
   const username = req.query.username.toLowerCase();
   console.log('username: ', username);
 
-  // , "WITHDIST"
-  client.georadiusbymember("user_locations", username, nearByQueryRadius, nearByQueryRadiusMetric, "WITHCOORD", (error, user_locations) => {
+  client.georadiusbymember("user_locations", username, nearByQueryRadius, nearByQueryRadiusMetric, "WITHDIST", "WITHCOORD", (error, user_locations) => {
     console.log('error: ', JSON.stringify(error))
-    console.log('user_locations: ', JSON.stringify(user_locations))
+
+    if (user_locations) {
+      console.log('user_locations: ', JSON.stringify(user_locations))
+
+      _.remove(user_locations, (user_location) => {
+        return user_location[0] === username;
+      })
+    }
 
     res.send(user_locations);
   });
-
-});
-
-/*
-  GET - /nearbyfriends?current_lat=1.1212&current_lng=1.1213
-*/
-router.get('/nearbyfriends2', function(req, res, next) {
-    const current_lat = req.query.current_lat || "13.361389";
-    const current_lng = req.query.current_lng || "38.115556";
-
-    // , "WITHDIST"
-    client.georadius("user_locations", current_lat, current_lng, nearByQueryRadius, nearByQueryRadiusMetric, "WITHCOORD", (error, user_locations) => {
-      console.log('error: ', JSON.stringify(error))
-      console.log('user_locations: ', JSON.stringify(user_locations))
-
-      res.send(user_locations);
-    });
 
 });
 
