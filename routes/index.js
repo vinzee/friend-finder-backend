@@ -23,7 +23,7 @@ router.get('/', function(req, res, next) {
 
 // create user
 router.post('/login', function(req, res, next) {
-  const username = req.query.username.toLowerCase();
+  const username = req.body.username.toLowerCase();
   console.log("Username: ", username);
 
   if (!_.isEmpty(username)) {
@@ -37,10 +37,12 @@ router.post('/login', function(req, res, next) {
   }
 });
 
-router.put('/user/location', function(req, res, next) {
-  client.sismember("users", req.body.username, (error, replies) => {
+router.put('/update_location', function(req, res, next) {
+  const username = req.body.username.toLowerCase();
+
+  client.sismember("users", username, (error, replies) => {
     if (_.isEmpty(error) && replies == 1) {
-      client.geoadd("user_locations", req.body.latitude, req.body.longitude, req.body.username, redis.print);
+      client.geoadd("user_locations", req.body.latitude, req.body.longitude, username, redis.print);
 
       client.georadiusbymember("user_locations", username, nearByQueryRadius, nearByQueryRadiusMetric, "WITHCOORD", "WITHDIST", (error, user_locations) => {
         console.log('error: ', JSON.stringify(error))
