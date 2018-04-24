@@ -3,33 +3,30 @@
   <head>
     <title>FriendFinder</title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
-    <script src="jquery/jquery.min.js"></script>
+    <script src='jquery/jquery.min.js'></script>
   </head>
   <body>
     <h1>FriendFinder</h1>
 
-    <a href="/seed">Seed DB</a><br><br><br>
-
+    <a href="/seed">Seed DB</a> &nbsp; | &nbsp;
     <a href="/flushall">Flush DB</a><br><br><br>
 
     <b>Users (<%= users.length %>)</b>
-    <p><%= users %></p>
+    <pre><%= users %></pre>
 
     <b>user_locations (<%= user_locations.length %>)</b>
-    <p><%= user_locations %></p>
+    <pre><%= user_locations %></pre>
 
     <b>nearbyfriends (<span id="nearbyfriends_length"></span>)</b>
-    <p id="nearbyfriends"></p>
+    <pre id="nearbyfriends"></pre>
 
     <script>
-
       $.get('/nearbyfriends?username=vineet', (data) => {
         console.log('nearbyfriends: ', data);
 
         $("#nearbyfriends_length").text(data.length);
         $("#nearbyfriends").html(data);
       });
-
     </script>
   </body>
 </html>

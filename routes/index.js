@@ -16,6 +16,7 @@ client.on("error", function (err) {
 router.get('/', function(req, res, next) {
   client.smembers("users", function (error, users) {
     client.geopos("user_locations", ...users, (error, user_locations) => {
+      console.log(user_locations);
       res.render('index', { users: users, user_locations: user_locations });
     });
   });
@@ -48,12 +49,11 @@ router.put('/update_location', function(req, res, next) {
         console.log('error: ', JSON.stringify(error))
         console.log('user_locations: ', JSON.stringify(user_locations))
 
-        res.writeHead( 200, 'Location Updated and Near by Friends retured', {'content-type' : 'text/plain'});
+        // res.send(JSON.stringify(user_locations));
         res.send(user_locations);
       });
     } else {
-      res.writeHead( 400, 'Username is invalid', {'content-type' : 'text/plain'});
-      res.send('Username is invalid');
+      res.send(JSON.stringify([]));
     }
   });
 });
@@ -99,7 +99,7 @@ router.delete('/user', function(req, res, next) {
 router.get('/seed', function(req, res, next) {
   client.flushall("async", redis.print);
 
-  _.each(["vineet", "vipin", "vrasad"], (name, i) => {
+  _.each(["vineet", "vipin", "prasad"], (name, i) => {
     client.sadd("users", name, redis.print);
     client.geoadd("user_locations", (13.361389 + 0.0000001 * i), (38.115555 + 0.0000001 * i), name.toLowerCase(), redis.print);
   })
