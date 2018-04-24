@@ -23,7 +23,7 @@
 
     <script>
 
-      $.get('/nearbyfriends?current_lat=13.361389&current_lng=38.115555', (data) => {
+      $.get('/nearbyfriends?username=vineet', (data) => {
         console.log('nearbyfriends: ', data);
 
         $("#nearbyfriends_length").text(data.length);

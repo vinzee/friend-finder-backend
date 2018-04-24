@@ -5,8 +5,8 @@ const express = require('express'),
     client = redis.createClient(process.env.REDIS_URL),
     {promisify} = require('util'),
     asyncClient = promisify(client.get).bind(client),
-    nearByQueryRadius = 100,
-    nearByQueryRadiusMetric = "mi";
+    nearByQueryRadius = "1",
+    nearByQueryRadiusMetric = "km";
 
 client.on("error", function (err) {
     console.log("REDIS ERROR !!! - \n\n ", err);
@@ -23,10 +23,11 @@ router.get('/', function(req, res, next) {
 
 // create user
 router.post('/login', function(req, res, next) {
-  console.log("Username: ", req.body.username);
+  const username = req.query.username.toLowerCase();
+  console.log("Username: ", username);
 
-  if (!_.isEmpty(req.body.username)) {
-    client.sadd("users", req.body.username, redis.print);
+  if (!_.isEmpty(username)) {
+    client.sadd("users", username, redis.print);
 
     res.writeHead( 200, 'User logged in', {'content-type' : 'text/plain'});
     res.end( 'User logged in');
@@ -40,11 +41,17 @@ router.put('/user/location', function(req, res, next) {
   client.sismember("users", req.body.username, (error, replies) => {
     if (_.isEmpty(error) && replies == 1) {
       client.geoadd("user_locations", req.body.latitude, req.body.longitude, req.body.username, redis.print);
-      res.writeHead( 200, 'Location Updated', {'content-type' : 'text/plain'});
-      res.end( 'Location Updated');
+
+      client.georadiusbymember("user_locations", username, nearByQueryRadius, nearByQueryRadiusMetric, "WITHCOORD", "WITHDIST", (error, user_locations) => {
+        console.log('error: ', JSON.stringify(error))
+        console.log('user_locations: ', JSON.stringify(user_locations))
+
+        res.writeHead( 200, 'Location Updated and Near by Friends retured', {'content-type' : 'text/plain'});
+        res.send(user_locations);
+      });
     } else {
       res.writeHead( 400, 'Username is invalid', {'content-type' : 'text/plain'});
-      res.end( 'Username is invalid');
+      res.send('Username is invalid');
     }
   });
 });
@@ -53,7 +60,8 @@ router.put('/user/location', function(req, res, next) {
   GET - /nearbyfriends?username=vineet
 */
 router.get('/nearbyfriends', function(req, res, next) {
-    const username = req.query.username;
+    const username = req.query.username.toLowerCase();
+    console.log('username: ', username);
 
     client.georadiusbymember("user_locations", username, nearByQueryRadius, nearByQueryRadiusMetric, "WITHCOORD", "WITHDIST", (error, user_locations) => {
       console.log('error: ', JSON.stringify(error))
@@ -82,15 +90,16 @@ router.get('/nearbyfriends2', function(req, res, next) {
 
 // delete user
 router.delete('/user', function(req, res, next) {
-  client.sadd("users", req.body.username, redis.print);
+  const username = req.query.username.toLowerCase();
+  client.sadd("users", username, redis.print);
 });
 
 router.get('/seed', function(req, res, next) {
   client.flushall("async", redis.print);
 
-  _.each(["Vineet", "Vipin", "Prasad"], (name, i) => {
+  _.each(["vineet", "vipin", "vrasad"], (name, i) => {
     client.sadd("users", name, redis.print);
-    client.geoadd("user_locations", (13.361389 + 0.0000001 * i), (38.115555 + 0.0000001 * i), name, redis.print);
+    client.geoadd("user_locations", (13.361389 + 0.0000001 * i), (38.115555 + 0.0000001 * i), name.toLowerCase(), redis.print);
   })
 
   res.send(200);
