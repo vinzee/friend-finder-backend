@@ -21,4 +21,8 @@ $ heroku logs -a android-friend-finder
 $ heroku logs --tail  -a android-friend-finder
 
 $ heroku addons:info redis-fitted-10737
+
+$ heroku redis:cli -a android-friend-finder -c android-friend-finder
+
+$ zrem user_locations "key"
 ```

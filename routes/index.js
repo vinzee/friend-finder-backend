@@ -42,10 +42,17 @@ router.post('/register', function(req, res, next) {
   const username = req.body.username.toLowerCase();
   const password = req.body.password.toLowerCase();
 
-  client.hset("users", username, password, redis.print);
+  client.hexists("users", username, (error, replies) => {
+    if (replies === 1) {
+      res.writeHead( 400, 'User is already registered', {'content-type' : 'text/plain'});
+      res.end('User is already registered');
+    } else {
+      client.hset("users", username, password, redis.print);
 
-  res.writeHead( 200, 'User registered successfully', {'content-type' : 'text/plain'});
-  res.end('User registered successfully');
+      res.writeHead( 200, 'User registered successfully', {'content-type' : 'text/plain'});
+      res.end('User registered successfully');
+    }
+  });
 });
 
 
