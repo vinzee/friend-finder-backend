@@ -12,10 +12,10 @@
     <a href="/flushall">Flush DB</a><br><br><br>
 
     <b>Users (<%= users.length %>)</b>
-    <pre><%= users %></pre>
+    <pre><%= JSON.stringify(users) %></pre>
 
     <b>user_locations (<%= user_locations.length %>)</b>
-    <pre><%= user_locations %></pre>
+    <pre><%= JSON.stringify(user_locations) %></pre>
 
     <b>nearbyfriends (<span id="nearbyfriends_length"></span>)</b>
     <pre id="nearbyfriends"></pre>
@@ -25,7 +25,7 @@
         console.log('nearbyfriends: ', data);
 
         $("#nearbyfriends_length").text(data.length);
-        $("#nearbyfriends").html(data);
+        $("#nearbyfriends").html(JSON.stringify(data));
       });
     </script>
   </body>
