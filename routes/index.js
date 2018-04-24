@@ -15,7 +15,8 @@ client.on("error", function (err) {
 /* GET home page. */
 router.get('/', function(req, res, next) {
   client.hgetall("users", function (error, users) {
-    users = users || {}
+    users = users || {};
+    console.log('users: ', users);
 
     client.geopos("user_locations", ..._.keys(users), (error, user_locations) => {
       console.log(user_locations);
@@ -130,7 +131,6 @@ router.get('/nearbyfriends', function(req, res, next) {
   }
 
   const username = req.query.username.toLowerCase();
-  console.log('username: ', username);
 
   client.georadiusbymember("user_locations", username, nearByQueryRadius, nearByQueryRadiusMetric, "WITHDIST", "WITHCOORD", (error, user_locations) => {
     console.log('error: ', JSON.stringify(error))
