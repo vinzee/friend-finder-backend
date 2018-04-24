@@ -54,7 +54,14 @@ router.put('/update_location', function(req, res, next) {
       // , "WITHDIST"
       client.georadiusbymember("user_locations", username, nearByQueryRadius, nearByQueryRadiusMetric, "WITHCOORD", (error, user_locations) => {
         console.log('error: ', JSON.stringify(error))
-        console.log('user_locations: ', JSON.stringify(user_locations))
+
+        if (user_locations) {
+          console.log('user_locations: ', JSON.stringify(user_locations))
+
+          _.remove(user_locations, (user_location) => {
+            return user_location[0] === username;
+          })
+        }
 
         // res.send(JSON.stringify(user_locations));
         res.send(user_locations);
@@ -116,7 +123,7 @@ router.get('/seed', function(req, res, next) {
 
   _.each(["vineet", "vipin", "prasad"], (name, i) => {
     client.sadd("users", name, redis.print);
-    client.geoadd("user_locations", (13.361389 + 0.0000001 * i), (38.115555 + 0.0000001 * i), name.toLowerCase(), redis.print);
+    client.geoadd("user_locations", (39.25561219453811646 + 0.0000000001 * i), (-76.71097479463344371 + 0.000000000 * i), name.toLowerCase(), redis.print);
   })
 
   res.send(200);
