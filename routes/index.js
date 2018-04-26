@@ -160,6 +160,18 @@ router.delete('/user', function(req, res, next) {
   client.sadd("users", username, redis.print);
 });
 
+
+function create_dummy (username, latitude, longitude) {
+  client.hset("users", username, username, redis.print);
+  client.geoadd("user_locations", latitude, longitude, username, redis.print);
+}
+
+router.get('/create_dummy', function(req, res, next) {
+  create_dummy(req.query.username, req.query.latitude, req.query.longitude);
+
+  res.send(200);
+});
+
 router.get('/seed', function(req, res, next) {
   client.flushall(redis.print);
 
@@ -171,6 +183,13 @@ router.get('/seed', function(req, res, next) {
     client.hset("users", name, name, redis.print);
     client.geoadd("user_locations", (39.25561219453811646 + 0.0000000001 * i), (-76.71097479463344371 + 0.000000000 * i), name, redis.print);
   }
+
+  create_dummy("umbc commons", 39.255029, -76.710834);
+  create_dummy("umbc", 39.255613, -76.710975);
+  create_dummy("umbc rac", 39.252914, -76.712548);
+  create_dummy("belwood-green", 39.261483, -76.698070);
+  create_dummy("algate", 39.261975, -76.698870);
+  create_dummy("chapel square", 39.260349, -76.698261);
 
   res.send(200);
 });

@@ -27,6 +27,13 @@
         $("#nearbyfriends_length").text(data.length);
         $("#nearbyfriends").html(JSON.stringify(data));
       });
+
+      function create_dummy(username, latitude, longitude) {
+        $.get('/create_dummy?username=' + username + '&latitude=' + latitude + '&longitude=' + longitude, (data) => {
+          console.log('user created !', data);
+        });
+      }
+
     </script>
   </body>
 </html>
