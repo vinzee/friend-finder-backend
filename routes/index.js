@@ -126,40 +126,11 @@ router.put('/update_location', function(req, res, next) {
   });
 });
 
-/*
-  GET - /nearbyfriends?username=vineet
-*/
-router.get('/nearbyfriends', function(req, res, next) {
-  if (_.isEmpty(req.query.username)) {
-    res.writeHead( 400, 'Username is blank', {'content-type' : 'text/plain'});
-    res.end('Username is blank');
-    return;
-  }
-
-  const username = req.query.username.toLowerCase();
-
-  client.georadiusbymember("user_locations", username, nearByQueryRadius, nearByQueryRadiusMetric, "WITHDIST", "WITHCOORD", (error, user_locations) => {
-    console.log('error: ', JSON.stringify(error))
-
-    if (user_locations) {
-      console.log('user_locations: ', JSON.stringify(user_locations))
-
-      _.remove(user_locations, (user_location) => {
-        return user_location[0] === username;
-      })
-    }
-
-    res.send(user_locations);
-  });
-
-});
-
 // delete user
 router.delete('/user', function(req, res, next) {
   const username = req.query.username.toLowerCase();
   client.sadd("users", username, redis.print);
 });
-
 
 function create_dummy (username, latitude, longitude) {
   client.hset("users", username, username, redis.print);
