@@ -83,12 +83,12 @@ router.post('/login', function(req, res, next) {
           res.writeHead( 200, 'User logged in successfully', {'content-type' : 'text/plain'});
           res.end('User logged in successfully');
         } else {
-          res.writeHead( 400, 'Password is invalid', {'content-type' : 'text/plain'});
+          res.writeHead( 400, 'Wrong Password', {'content-type' : 'text/plain'});
           res.end('Password is invalid');
         }
       });
     } else {
-      res.writeHead( 400, 'Username is invalid', {'content-type' : 'text/plain'});
+      res.writeHead( 400, 'Username not found', {'content-type' : 'text/plain'});
       res.end('Username is invalid');
     }
   });
@@ -161,18 +161,22 @@ router.delete('/user', function(req, res, next) {
 });
 
 router.get('/seed', function(req, res, next) {
-  client.flushall("async", redis.print);
+  client.flushall(redis.print);
 
-  _.each(["vineet", "vipin", "prasad"], (name, i) => {
+  let count = req.query.count || 10;
+  count = parseInt(count);
+
+  for(let i = 0; i < count; i++){
+    let name = "vineet" + i;
     client.hset("users", name, name, redis.print);
-    client.geoadd("user_locations", (39.25561219453811646 + 0.0000000001 * i), (-76.71097479463344371 + 0.000000000 * i), name.toLowerCase(), redis.print);
-  })
+    client.geoadd("user_locations", (39.25561219453811646 + 0.0000000001 * i), (-76.71097479463344371 + 0.000000000 * i), name, redis.print);
+  }
 
   res.send(200);
 });
 
 router.get('/flushall', function(req, res, next) {
-  client.flushall("async", redis.print);
+  client.flushall(redis.print);
   res.writeHead( 200, 'Redis Database flushed', {'content-type' : 'text/plain'});
   res.end('Redis Database flushed');
 });
