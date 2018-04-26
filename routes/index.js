@@ -190,6 +190,8 @@ router.get('/seed', function(req, res, next) {
   create_dummy("belwood-green", 39.261483, -76.698070);
   create_dummy("algate", 39.261975, -76.698870);
   create_dummy("chapel square", 39.260349, -76.698261);
+  create_dummy("vin", 39.260349, -76.698261);
+  create_dummy("weis", 40.095482, -75.288555);
 
   res.send(200);
 });
